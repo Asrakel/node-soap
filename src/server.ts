@@ -316,6 +316,7 @@ export class Server extends EventEmitter {
         const services = this.wsdl.definitions.services;
         let firstPort: IPort;
         let name;
+        let method;
         for (name in services) {
           serviceName = name;
           const service = services[serviceName];
@@ -328,15 +329,27 @@ export class Server extends EventEmitter {
             if (typeof this.log === 'function') {
               this.log('info', 'Trying ' + portName + ' from path ' + portPathname);
             }
-
-            if (portPathname === pathname) {
-              return port.binding;
+            for(method in port.binding.methods)
+            {    
+              if(method === Object.keys(obj.Body)[0])
+              {
+                // console.error("method", method);
+                return port.binding;
+              }
             }
-
             // The port path is almost always wrong for generated WSDLs
             if (!firstPort) {
-              firstPort = port;
+                firstPort = ports[0];
             }
+            
+            // if (portPathname === pathname) {
+            //   return port.binding;
+            // }
+
+            // // The port path is almost always wrong for generated WSDLs
+            // if (!firstPort) {
+            //   firstPort = port;
+            // }
           }
         }
         return !firstPort ? void 0 : firstPort.binding;
@@ -607,9 +620,14 @@ export class Server extends EventEmitter {
     let fault;
 
     let statusCode: number;
+    var header: string;
     if (soapFault.statusCode) {
       statusCode = soapFault.statusCode;
       soapFault.statusCode = undefined;
+    }
+    if(soapFault.header) {
+      header = soapFault.header;
+      soapFault.header = undefined;
     }
 
     if ('faultcode' in soapFault) {
@@ -624,7 +642,7 @@ export class Server extends EventEmitter {
       fault = this.wsdl.objectToDocumentXML('Fault', soapFault, 'soap');
     }
 
-    return callback(this._envelope(fault, '', includeTimestamp), statusCode);
+    return callback(this._envelope(fault, header, includeTimestamp), statusCode);
   }
 
   private _sendHttpResponse(res: Response, statusCode: number, result) {

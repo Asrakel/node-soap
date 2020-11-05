@@ -36,6 +36,7 @@ export interface ISoapFault11 {
   faultstring: string;
   detail?: string;
   statusCode?: number;
+  header? : string;
 }
 
 // SOAP Fault 1.2
@@ -46,6 +47,7 @@ export interface ISoapFault12 {
   Code: { Value: string; Subcode?: { value: string; }; };
   Reason: { Text: string; };
   statusCode?: number;
+  header? : string;
 }
 
 /** @deprecated use ISecurity */
